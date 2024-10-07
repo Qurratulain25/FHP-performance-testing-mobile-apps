@@ -1,6 +1,7 @@
 # fuzzy_ahp.py
 #libraries used 
 import numpy as np
+import pandas as pd
 # Step 1: Define the hierarchy for Fuzzy AHP
 
 # Goal: Select the test cases that impact performance testing
@@ -162,5 +163,70 @@ if __name__ == "__main__":
     print("\nPriority Weights for Each Criterion:")
     for criterion, weight in priority_weights.items():
         print(f"{criterion}: {weight}")
+# Save the fuzzy synthetic extents to a CSV file
+def save_synthetic_extents_to_csv(synthetic_extents, file_path):
+    synthetic_df = pd.DataFrame.from_dict(synthetic_extents, orient='index', columns=["L", "M", "U"])
+    synthetic_df.to_csv(file_path)
+    print(f"Fuzzy synthetic extents have been saved to {file_path}")
 
+# Save the priority weights to a CSV file
+def save_priority_weights_to_csv(priority_weights, file_path):
+    weights_df = pd.DataFrame(list(priority_weights.items()), columns=["Criterion", "Weight"])
+    weights_df.to_csv(file_path, index=False)
+    print(f"Priority weights have been saved to {file_path}")
+
+if __name__ == "__main__":
+    # Perform the Fuzzy AHP steps
+    display_hierarchy()
+    display_fuzzy_comparisons()
+    
+    fuzzy_synthetic_extents = calculate_synthetic_extents()
+    possibilities = calculate_possibilities(fuzzy_synthetic_extents)
+    priority_weights = calculate_priority_weights(possibilities, criteria)
+    
+    # Save the fuzzy synthetic extents to CSV
+    save_synthetic_extents_to_csv(fuzzy_synthetic_extents, r'E:/Qurratulain/FHP-performance-testing-mobile-apps/fuzzy_synthetic_extents.csv')
+    
+    # Save the priority weights to CSV
+    save_priority_weights_to_csv(priority_weights, r'E:/Qurratulain/FHP-performance-testing-mobile-apps/fuzzy_priority_weights.csv')
+# Step 6: Calculate weighted scores and rank the test cases based on the fuzzy AHP results
+
+# Assuming test_case_scores is available and corresponds to the test case scores for each criterion
+# For example purposes, we'll use simulated scores here:
+test_case_scores = {
+    "Elapsed Time": [17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+    "Throughput": [17, 16, 15, 14, 13, 12, 11, 10, 9, 8],
+    "Load/Network": [14, 13, 12, 11, 10, 9, 8, 7, 6, 5],
+    "Latency": [24, 23, 22, 21, 20, 19, 18, 17, 16, 15]
+}
+
+# Function to calculate weighted scores for each test case
+def calculate_weighted_scores(test_cases, test_case_scores, priority_weights):
+    total_scores = {tc: 0 for tc in test_cases}  # Initialize total scores for each test case
+    
+    # Loop through each criterion and its corresponding scores for test cases
+    for criterion, scores in test_case_scores.items():
+        weight = priority_weights.get(criterion, 0)
+        # Add the weighted score to the total score for each test case
+        for i, score in enumerate(scores):
+            total_scores[test_cases[i]] += weight * score
+    
+    return total_scores
+
+# Calculate the weighted scores for each test case
+weighted_scores = calculate_weighted_scores(alternatives, test_case_scores, priority_weights)
+
+# Sort test cases by their total scores in descending order (higher score = higher priority)
+ranked_test_cases = sorted(weighted_scores.items(), key=lambda x: x[1], reverse=True)
+
+# Display the ranked test cases
+print("\nRanked Test Cases based on Weighted Scores:")
+for rank, (test_case, score) in enumerate(ranked_test_cases, start=1):
+    print(f"Rank {rank}: {test_case} with score {score}")
+
+# Save ranked test cases to CSV
+ranked_df = pd.DataFrame(ranked_test_cases, columns=["Test Case", "Weighted Score"])
+ranked_df.to_csv(r'E:/Qurratulain/FHP-performance-testing-mobile-apps/ranked_test_cases.csv', index=False)
+
+print("Ranked test cases have been saved to 'ranked_test_cases.csv'")
 
