@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
 # Step 1: Fuzzy Triangular Numbers based on linguistic terms
 linguistic_to_tfn = {
     'Absolutely Important (AI)': (7, 9, 9),
@@ -40,7 +41,7 @@ def calculate_priority_weights(possibilities, criteria):
         priority_weights[criterion] /= total_weight
     return priority_weights
 
-# Step 5: Save results to CSV
+# Step 5: Save results to CSV and visualize as a bar chart
 def save_results_to_csv_and_visualize(data, file_path, app_name):
     # Convert the dictionary into a DataFrame
     df = pd.DataFrame(list(data.items()), columns=['Criterion', 'Weight'])
@@ -58,9 +59,34 @@ def save_results_to_csv_and_visualize(data, file_path, app_name):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    # Save the plot as an image (optional) and display it
+    # Save the plot as an image and display it
     image_file_path = file_path.replace('.csv', '.png')
     plt.savefig(image_file_path)  # Save as a PNG image
     plt.show()  # Display the plot
     
     print(f"Visualization saved to {image_file_path}")
+
+# Step 6: Plot multiple applications' results in one image
+def plot_all_apps_results(results_dict):
+    num_apps = len(results_dict)
+    
+    # Create a subplot for each application
+    fig, axes = plt.subplots(nrows=num_apps, ncols=1, figsize=(10, 6 * num_apps))
+    
+    # If only one app, axes won't be an array; convert it to one for consistency
+    if num_apps == 1:
+        axes = [axes]
+    
+    # Loop over each application and plot its data
+    for i, (app_name, data) in enumerate(results_dict.items()):
+        df = pd.DataFrame(list(data.items()), columns=['Criterion', 'Weight'])
+        axes[i].bar(df['Criterion'], df['Weight'], color='navy')
+        axes[i].set_title(f'FAHP Criteria Weights for {app_name}')
+        axes[i].set_xlabel('Criteria')
+        axes[i].set_ylabel('Weight')
+        axes[i].tick_params(axis='x', rotation=45)
+    
+    # Adjust layout and save/show the figure
+    plt.tight_layout()
+    plt.savefig('static/results/all_apps_fahp_results.png')  # Save as a single image
+    plt.show()  # Display the plot
