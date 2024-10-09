@@ -1,5 +1,5 @@
 import pandas as pd
-from fahp_utils import linguistic_to_tfn, calculate_fuzzy_synthetic_extent, calculate_priority_weights, save_results_to_csv
+from fahp_utils import calculate_fuzzy_synthetic_extent, calculate_priority_weights, save_results_to_csv
 
 def run_fahp_for_aliexpres():
     # Step 1: Load dataset
