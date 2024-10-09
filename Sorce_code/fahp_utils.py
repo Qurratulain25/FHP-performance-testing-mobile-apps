@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+import matplotlib.pyplot as plt
 # Step 1: Fuzzy Triangular Numbers based on linguistic terms
 linguistic_to_tfn = {
     'Absolutely Important (AI)': (7, 9, 9),
@@ -41,6 +41,26 @@ def calculate_priority_weights(possibilities, criteria):
     return priority_weights
 
 # Step 5: Save results to CSV
-def save_results_to_csv(data, file_path):
-    pd.DataFrame(data).to_csv(file_path, index=False)
+def save_results_to_csv_and_visualize(data, file_path, app_name):
+    # Convert the dictionary into a DataFrame
+    df = pd.DataFrame(list(data.items()), columns=['Criterion', 'Weight'])
+    
+    # Save the DataFrame to a CSV file
+    df.to_csv(file_path, index=False)
     print(f"Results saved to {file_path}")
+    
+    # Visualization: Bar chart of the criteria weights
+    plt.figure(figsize=(10, 6))
+    plt.bar(df['Criterion'], df['Weight'], color='navy')  # Set color to navy blue
+    plt.xlabel('Criteria')
+    plt.ylabel('Weights')
+    plt.title(f'FAHP Criteria Weights for {app_name}')  # Title includes the application name
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    # Save the plot as an image (optional) and display it
+    image_file_path = file_path.replace('.csv', '.png')
+    plt.savefig(image_file_path)  # Save as a PNG image
+    plt.show()  # Display the plot
+    
+    print(f"Visualization saved to {image_file_path}")
