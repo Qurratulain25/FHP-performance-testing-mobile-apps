@@ -1,9 +1,10 @@
 import pandas as pd
-from fahp_utils import calculate_fuzzy_synthetic_extent, calculate_priority_weights, save_results_to_csv
+from fahp_utils import calculate_fuzzy_synthetic_extent, calculate_priority_weights, save_results_to_csv_and_visualize
 
-def run_fahp_for_aliexpres():
+
+def run_fahp_for_aliexpress():
     # Step 1: Load dataset
-    df = pd.read_excel('dataset/ALI_EXPRESS_combined.xlsx')
+    df = pd.read_excel('E:/Qurratulain/FHP-performance-testing-mobile-apps/dataset/ALI_EXPRESS_combined.xlsx')
 
     # Step 2: Define the criteria and pairwise comparisons
     criteria = ['Elapsed Time', 'Throughput', 'Load/Network', 'Latency']
@@ -31,8 +32,9 @@ def run_fahp_for_aliexpres():
     priority_weights = calculate_priority_weights(possibilities, criteria)
 
     # Step 5: Save the results
-    save_results_to_csv(priority_weights, 'results/ali_express_fahp_results.csv')
-
+    save_results_to_csv_and_visualize(priority_weights, 'results/ali_express_fahp_results.csv','Ali Express')
+# Add this line to check if it completes
+    print("AliExpress FAHP process completed successfully.")
 # Call the function
 if __name__ == "__main__":
-    run_fahp_for_aliexpres()
+    run_fahp_for_aliexpress()
