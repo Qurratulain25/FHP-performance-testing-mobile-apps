@@ -2,12 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quartile Data Preview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAHP Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Quartile Data Preview</h1>
-    <div>
-        {{ quartile_preview|safe }}  <!-- Display the table with the quartile data -->
+    <div class="main-container">
+        <div class="sidebar">
+            <h2>Results</h2>
+            <ul id="fahp-steps-results">
+                <li>Step 1: Criteria Set: Throughput, Latency, etc.</li>
+                <li>Step 2: Weight Assigned</li>
+                <li>Step 3: Synthetic Extent</li>
+            </ul>
+        </div>
+        <div class="content">
+            <h1>FAHP Analytical Hierarchy Results</h1>
+            
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" style="width:100%;max-width:600px;">
+            
+            <form action="/download_report" method="POST">
+                <button type="submit" class="download-btn">Download PDF Report</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
