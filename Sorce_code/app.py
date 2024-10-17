@@ -1,41 +1,60 @@
-from flask import Flask, render_template, request, redirect, url_for
 import os
+import io
+import pdfkit
+import base64
+import matplotlib.pyplot as plt
+import time
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
+
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'xlsx'}
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads/'  # Folder to save uploaded files
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'supersecretkey'  # This is needed for secure sessions
 
-# Ensure the upload folder exists
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Function to check allowed file types
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Route for the homepage (upload form)
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-# Route to handle file upload
-@app.route('/upload_quartile', methods=['POST'])
-def upload_quartile_file():
-    if request.method == 'POST':
-        file = request.files['file']  # Get the uploaded file
-        if file:
-            filename = file.filename
+@app.route("/", methods=["GET", "POST"])
+def index():
+    uploaded_file = None  # Initialize the uploaded file variable
+    if request.method == "POST":
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)  # Save the file to the uploads folder
-            return f'File {filename} uploaded successfully!'  # For now, just return this message
-    return redirect(url_for('home'))
-# Step 2: Process the uploaded quartile file
-@app.route('/process_quartile/<filename>')
-def process_quartile(filename):
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            uploaded_file = filename  # Pass the uploaded filename
+            flash(f'File "{filename}" uploaded successfully')  # Message after success
     
-    # Load the Excel file using pandas
-    quartile_data = pd.read_excel(filepath)
-    
-    # Display the first few rows of the quartile data to check it loaded correctly
-    quartile_preview = quartile_data.head().to_html()  # Convert the DataFrame to HTML for rendering
+    return render_template("index.html", uploaded_file=uploaded_file)
 
-    # For now, just show the first few rows of the data on the results page
-    return render_template('results.html', quartile_preview=quartile_preview)
-if __name__ == '__main__':
+# Route for running FAHP steps and updating the sidebar
+@app.route('/run_fahp', methods=["POST"])
+def run_fahp():
+    step = request.json.get('step')
+    
+    # Simulate some time taken for each step (you can replace this with real step execution)
+    time.sleep(2)  # This is to simulate the step running
+
+    response = {
+        'message': f"Step {step} completed",
+        'next_step': step + 1 if step < 4 else None  # Simulate 4 steps
+    }
+    return jsonify(response)
+
+# Serve uploaded files
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+if __name__ == "__main__":
     app.run(debug=True)

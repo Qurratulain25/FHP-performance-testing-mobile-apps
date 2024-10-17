@@ -2,14 +2,115 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload Quartile File</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAHP Analytical Hierarchy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Upload Quartile File</h1>
+    <!-- Header box on top -->
+    <div class="header-box">
+        <h1>FUZZY Analytical Hierarchy</h1>
+    </div>
 
-    <form action="/upload_quartile" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <button type="submit">Upload</button>
-    </form>
+    <div class="main-container">
+        <div class="content-body">
+            <div class="sidebar">
+                <h2>Steps of FAHP</h2>
+                <ul id="fahp-steps">
+                    <li id="step1">
+                        <div class="step-container">
+                            <span class="circle" id="circle1">1</span>
+                            <span>Step 1: Set Goal</span>
+                        </div>
+                        <div class="progress-bar" id="progress-bar1"></div>
+                    </li>
+                    <li id="step2">
+                        <div class="step-container">
+                            <span class="circle" id="circle2">2</span>
+                            <span>Step 2: Pairwise Comparison</span>
+                        </div>
+                        <div class="progress-bar" id="progress-bar2"></div>
+                    </li>
+                    <li id="step3">
+                        <div class="step-container">
+                            <span class="circle" id="circle3">3</span>
+                            <span>Step 3: Fuzzy Synthetic Extent</span>
+                        </div>
+                        <div class="progress-bar" id="progress-bar3"></div>
+                    </li>
+                    <li id="step4">
+                        <div class="step-container">
+                            <span class="circle" id="circle4">4</span>
+                            <span>Step 4: Priority Weights Calculation</span>
+                        </div>
+                        <div class="progress-bar" id="progress-bar4"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="content">
+                <div class="upload-section">
+                    <form id="upload-form" action="/" method="post" enctype="multipart/form-data">
+                        <input type="file" name="file" class="upload-input" id="file-input" />
+                        <button type="submit" class="upload-btn" id="upload-btn">Upload</button>
+                        <button type="button" class="uploaded-btn" id="uploaded-btn" style="display:none;" disabled>Uploaded</button>
+                    </form>
+                </div>
+
+                <div class="run-section">
+                    <button id="run-btn" class="run-btn" onclick="startFAHPProcess()">Run</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for handling FAHP Process and Progress Bars -->
+    <script>
+        function animateProgressBar(progressBarId, duration) {
+            const progressBar = document.getElementById(progressBarId);
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width++;
+                    progressBar.style.width = width + '%';
+                }
+            }, duration / 100);  // Divide total duration by 100 to simulate progress percentage
+        }
+
+        function startFAHPProcess() {
+            let step = 1;
+
+            function runNextStep() {
+                // Animate the progress bar for the current step
+                animateProgressBar(`progress-bar${step}`, 2000);  // Simulate 2 seconds per step
+
+                fetch('/run_fahp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ step: step }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`circle${step}`).classList.add('completed');
+                    document.getElementById(`progress-bar${step}`).classList.add('completed');
+                    if (data.next_step) {
+                        step = data.next_step;
+                        runNextStep();  // Run the next step after this one is completed
+                    } else {
+                        // When the process is complete, redirect to the results page
+                        window.location.href = "/show_results";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error running FAHP process:', error);
+                });
+            }
+
+            runNextStep();  // Start the first step
+        }
+    </script>
 </body>
 </html>
