@@ -42,7 +42,7 @@ def index():
 def run_fahp():
     step = request.json.get('step')
     
-    # Simulate some time taken for each step (you can replace this with real step execution)
+    # Simulate some time taken for each step
     time.sleep(2)  # This is to simulate the step running
 
     response = {
