@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-# Load your dataset (adjust the path to your dataset)
+# Load dataset
 df = pd.read_excel(r'E:/Qurratulain/FHP-performance-testing-mobile-apps/dataset/Test Cases for all Applications.xlsx', engine='openpyxl') 
 
 # Print the first few rows to check the data
