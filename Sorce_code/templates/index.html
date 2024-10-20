@@ -1,155 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAHP Analytical Hierarchy</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FUZZY Analytical Hierarchy</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <style>
+      .checkbox-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .weight-select {
+        margin-top: 5px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
     <div class="header-box">
-        <h1>FUZZY Analytical Hierarchy</h1>
+      <h1>FUZZY Analytical Hierarchy</h1>
     </div>
-
     <div class="main-container">
-        <div class="content-body">
-            <div class="sidebar">
-                <h2>Steps of FAHP</h2>
-                <ul id="fahp-steps">
-                    <li id="step1">
-                        <div class="step-container">
-                            <span class="circle" id="circle1">✔</span>
-                            <span>Step 1: Set Goal</span>
-                        </div>
-                        <div class="progress-bar" id="progress-bar1"></div>
-                    </li>
-                    <li id="step2">
-                        <div class="step-container">
-                            <span class="circle" id="circle2">✔</span>
-                            <span>Step 2: Pairwise Comparison</span>
-                        </div>
-                        <div class="progress-bar" id="progress-bar2"></div>
-                    </li>
-                    <li id="step3">
-                        <div class="step-container">
-                            <span class="circle" id="circle3">✔</span>
-                            <span>Step 3: Fuzzy Synthetic Extent</span>
-                        </div>
-                        <div class="progress-bar" id="progress-bar3"></div>
-                    </li>
-                    <li id="step4">
-                        <div class="step-container">
-                            <span class="circle" id="circle4">✔</span>
-                            <span>Step 4: Priority Weights Calculation</span>
-                        </div>
-                        <div class="progress-bar" id="progress-bar4"></div>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="content">
-                <div class="upload-section">
-                    <label for="file-input">Choose the dataset:</label>
-                    <input type="file" name="file" class="upload-input" id="file-input" required />
-                    <button type="button" class="upload-btn" id="upload-btn">Upload</button>
-                </div>
-
-                <div class="criteria-section">
-                    <label for="custom_criteria">Or add your custom criteria:</label>
-                    <input type="text" id="custom_criteria" placeholder="Enter custom criteria" />
-                    <button type="button" onclick="addCustomCriteria()">Add Criteria</button>
-
-                    <label for="criteria">Select the criteria:</label>
-                    <select id="criteria" name="criteria">
-                        <option value="throughput">Throughput</option>
-                        <option value="latency">Latency</option>
-                        <option value="response_time">Response Time</option>
-                        <option value="network_load">Network Load</option>
-                    </select>
-                    <button type="button" class="select-btn" id="criteria-btn" disabled>Select</button>
-                </div>
-
-                <div class="weights-section">
-                    <label for="weights">Select linguistic weights:</label>
-                    <select id="weights" name="weights">
-                        <option value="equally_important">Equally Important</option>
-                        <option value="moderately_important">Moderately Important</option>
-                        <option value="strongly_important">Strongly Important</option>
-                    </select>
-                    <button type="button" class="select-btn" id="weights-btn" disabled>Select</button>
-                </div>
-
-                <div class="run-section">
-                    <button id="run-btn" class="run-btn" disabled>Run</button>
-                </div>
-            </div>
+      <div class="content-body">
+        <div class="sidebar">
+          <h2>Steps of FAHP</h2>
+          <ul id="fahp-steps">
+            <li id="step1">
+              <div class="step-container">
+                <span class="circle" id="circle1">1</span>
+                <span>Step 1: Set Goal</span>
+              </div>
+              <div class="progress-bar" id="progress-bar1"></div>
+            </li>
+            <li id="step2">
+              <div class="step-container">
+                <span class="circle" id="circle2">2</span>
+                <span>Step 2: Pairwise Comparison</span>
+              </div>
+              <div class="progress-bar" id="progress-bar2"></div>
+            </li>
+            <li id="step3">
+              <div class="step-container">
+                <span class="circle" id="circle3">3</span>
+                <span>Step 3: Fuzzy Synthetic Extent</span>
+              </div>
+              <div class="progress-bar" id="progress-bar3"></div>
+            </li>
+            <li id="step4">
+              <div class="step-container">
+                <span class="circle" id="circle4">4</span>
+                <span>Step 4: Priority Weights Calculation</span>
+              </div>
+              <div class="progress-bar" id="progress-bar4"></div>
+            </li>
+          </ul>
         </div>
+        <div class="content">
+          <div class="upload-section">
+            <label for="file-input">Choose the dataset:</label>
+            <input
+              type="file"
+              name="file"
+              class="upload-input"
+              id="file-input"
+              required
+            />
+            <button type="button" class="upload-btn" id="upload-btn">
+              Upload
+            </button>
+          </div>
+          <div class="criteria-section">
+            <label for="custom_criteria">Or add your custom criteria:</label>
+            <input
+              type="text"
+              id="custom_criteria"
+              placeholder="Enter custom criteria"
+              disabled
+            />
+            <button
+              type="button"
+              class="critireaBTN"
+              onclick="addCustomCriteria()"
+              disabled
+            >
+              Add Criteria
+            </button>
+            <label>Select the criteria:</label>
+            <div id="criteria-checkboxes" class="checkbox-container">
+              <!-- Default checkboxes will be added here by JavaScript -->
+            </div>
+            <button type="button" class="confirm-btn" id="confirm-btn" disabled>
+              Confirm
+            </button>
+          </div>
+          <div class="weights-section" id="weights-section">
+            <!-- Weight selects will be added here dynamically -->
+          </div>
+          <button
+            type="button"
+            class="confirm-btn hidden"
+            id="confirm-weights-btn"
+            disabled
+          >
+            Confirm
+          </button>
+          <div class="run-section">
+            <button id="run-btn" class="run-btn" disabled>Run</button>
+          </div>
+        </div>
+      </div>
     </div>
-
     <script>
-        // Handle file upload and progress to next step
-        document.getElementById("upload-btn").addEventListener("click", function () {
-            var fileInput = document.getElementById("file-input").files[0];
-            if (fileInput) {
-                var formData = new FormData();
-                formData.append("file", fileInput);
+      const defaultCriteria = [
+        "Throughput",
+        "Latency",
+        "Response Time",
+        "Network Load",
+      ];
+      const weightOptions = [
+        "Equally Important",
+        "Moderately Important",
+        "Strongly Important",
+      ];
 
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/", true);
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        // On success, change button state and move to next step
-                        document.getElementById("upload-btn").innerText = "Uploaded";
-                        document.getElementById("upload-btn").style.backgroundColor = "#3498db";
-                        document.getElementById("upload-btn").disabled = true;
+      function createCheckbox(criteria) {
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "criteria";
+        checkbox.value = criteria.toLowerCase().replace(/\s+/g, "_");
+        checkbox.id = `checkbox-${checkbox.value}`;
+        checkbox.disabled = true;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(` ${criteria}`));
+        return label;
+      }
 
-                        // Progress to Step 2
-                        updateStepProgress(1);
-                        document.getElementById("criteria-btn").disabled = false;  // Enable next button
-                    } else {
-                        alert("Error uploading file.");
-                    }
-                };
-                xhr.send(formData);
+      function createWeightSelect(criteria) {
+        const container = document.createElement("div");
+        container.className = "weight-select";
+        const label = document.createElement("label");
+        label.textContent = `Select weight for ${criteria}:`;
+        const select = document.createElement("select");
+        select.className = "weight-selection";
+        select.name = `weight-${criteria.toLowerCase().replace(/\s+/g, "_")}`;
+        select.id = `weight-${criteria.toLowerCase().replace(/\s+/g, "_")}`;
+        weightOptions.forEach((option) => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.toLowerCase().replace(/\s+/g, "_");
+          optionElement.textContent = option;
+          select.appendChild(optionElement);
+        });
+        container.appendChild(label);
+        container.appendChild(select);
+        return container;
+      }
+
+      function updateWeightSelects() {
+        const weightsSection = document.getElementById("weights-section");
+        weightsSection.innerHTML = "";
+        const checkedCriteria = Array.from(
+          document.querySelectorAll('input[name="criteria"]:checked')
+        ).map((checkbox) => checkbox.value);
+
+        checkedCriteria.forEach((criteria) => {
+          const weightSelect = createWeightSelect(criteria);
+          weightsSection.appendChild(weightSelect);
+        });
+
+        document.getElementById("run-btn").disabled =
+          checkedCriteria.length === 0;
+      }
+
+      function addCustomCriteria() {
+        const customCriteria = document
+          .getElementById("custom_criteria")
+          .value.trim();
+        if (
+          customCriteria &&
+          !document.getElementById(
+            `checkbox-${customCriteria.toLowerCase().replace(/\s+/g, "_")}`
+          )
+        ) {
+          const checkboxContainer = document.getElementById(
+            "criteria-checkboxes"
+          );
+          const newCheckbox = createCheckbox(customCriteria);
+          newCheckbox.querySelector("input").disabled = false;
+          checkboxContainer.appendChild(newCheckbox);
+          document.getElementById("custom_criteria").value = "";
+        }
+      }
+
+      // Initialize default checkboxes
+      const checkboxContainer = document.getElementById("criteria-checkboxes");
+      defaultCriteria.forEach((criteria) => {
+        const checkbox = createCheckbox(criteria);
+        checkboxContainer.appendChild(checkbox);
+      });
+
+      // Update progress and enable next steps
+      function updateStepProgress(step) {
+        document.getElementById(`progress-bar${step}`).style.width = "100%";
+        document
+          .getElementById(`progress-bar${step}`)
+          .classList.add("green-bar");
+        document.getElementById(`circle${step}`).classList.add("completed");
+        document.getElementById(`circle${step}`).textContent = "✓";
+      }
+
+      // Handle file upload and progress to next step
+      document
+        .getElementById("upload-btn")
+        .addEventListener("click", function () {
+          var fileInput = document.getElementById("file-input").files[0];
+          if (fileInput) {
+            var formData = new FormData();
+            formData.append("file", fileInput);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/", true);
+            xhr.onload = function () {
+              if (xhr.status === 200) {
+                // On success, change button state and move to next step
+                document.getElementById("upload-btn").innerText = "Uploaded";
+                document.getElementById("upload-btn").style.backgroundColor =
+                  "#00a2ff";
+                document.getElementById("upload-btn").disabled = true;
+                document.getElementById("file-input").disabled = true;
+
+                // Enable criteria section
+                document.getElementById("custom_criteria").disabled = false;
+                document
+                  .getElementById("criteria-checkboxes")
+                  .querySelectorAll("input")
+                  .forEach((checkbox) => {
+                    checkbox.disabled = false;
+                  });
+                document.querySelector(".critireaBTN").disabled = false;
+                document.getElementById("confirm-btn").disabled = false;
+
+                // Progress to Step 2
+                updateStepProgress(1);
+              } else {
+                alert("Error uploading file.");
+              }
+            };
+            xhr.send(formData);
+          } else {
+            alert("Please choose a file to upload.");
+          }
+        });
+
+      // Handle confirm button click
+      document
+        .getElementById("confirm-btn")
+        .addEventListener("click", function () {
+          updateWeightSelects();
+          updateStepProgress(2);
+          this.disabled = true;
+          document.getElementById("custom_criteria").disabled = true;
+          document.querySelector(".critireaBTN").disabled = true;
+          document
+            .getElementById("criteria-checkboxes")
+            .querySelectorAll("input")
+            .forEach((checkbox) => {
+              checkbox.disabled = true;
+            });
+          document
+            .getElementById("confirm-weights-btn")
+            .classList.remove("hidden");
+          document.getElementById("confirm-weights-btn").disabled = false;
+        });
+
+      document
+        .getElementById("confirm-weights-btn")
+        .addEventListener("click", function () {
+          updateStepProgress(3);
+          this.disabled = true;
+          document.getElementById("run-btn").disabled = false;
+        });
+
+      // Handle run FAHP process
+      document.getElementById("run-btn").addEventListener("click", function () {
+        var fileInput = document.getElementById("file-input").files[0];
+        console.log("fileInput", fileInput);
+        var selectedCriteria = Array.from(
+          document.querySelectorAll('input[name="criteria"]:checked')
+        ).map((checkbox) => checkbox.value);
+        console.log("selectedCriteria", selectedCriteria);
+        var linguisticWeights = {};
+        selectedCriteria.forEach((criteria) => {
+          linguisticWeights[criteria] = document.getElementById(
+            `weight-${criteria}`
+          ).value;
+        });
+        console.log("linguisticWeights", linguisticWeights);
+
+        if (fileInput && selectedCriteria.length > 0) {
+          var formData = new FormData();
+          formData.append("filename", fileInput.name);
+          formData.append(
+            "selected_criteria",
+            JSON.stringify(selectedCriteria)
+          );
+          formData.append(
+            "linguistic_weights",
+            JSON.stringify(linguisticWeights)
+          );
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/run_fahp", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              var response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                updateStepProgress(3);
+                updateStepProgress(4);
+                window.location.href = `/results?priority_weights=${response.priority_weights}&results_path=${response.results_path}&graph_path=${response.graph_path}`;
+              }
             } else {
-                alert("Please choose a file to upload.");
+              alert("Error running FAHP process.");
             }
-        });
+          };
 
-        // Update progress and enable next steps
-        function updateStepProgress(step) {
-            document.getElementById(`progress-bar${step}`).style.width = "100%";
-            document.getElementById(`circle${step}`).classList.add("completed");
+          xhr.send(
+            JSON.stringify({
+              filename: fileInput.name,
+              selected_criteria: selectedCriteria,
+              linguistic_weights: linguisticWeights,
+            })
+          );
+        } else {
+          alert(
+            "Please ensure that a file is uploaded and at least one criteria is selected."
+          );
         }
-
-        // Handle criteria selection
-        document.getElementById("criteria-btn").addEventListener("click", function () {
-            updateStepProgress(2);  // Move to Step 3
-            document.getElementById("weights-btn").disabled = false;  // Enable weights selection
-        });
-
-        // Handle weights selection
-        document.getElementById("weights-btn").addEventListener("click", function () {
-            updateStepProgress(3);  // Move to Step 4
-            document.getElementById("run-btn").disabled = false;  // Enable Run button
-        });
-
-        // Handle run FAHP process
-        document.getElementById("run-btn").addEventListener("click", function () {
-            updateStepProgress(4);  // Final step completion
-            alert("FAHP process completed!");  // Add FAHP process call here
-        });
-
-        // Handle adding custom criteria
-        function addCustomCriteria() {
-            var customCriteria = document.getElementById("custom_criteria").value.trim();
-            if (customCriteria) {
-                var option = document.createElement("option");
-                option.text = customCriteria;
-                option.value = customCriteria.toLowerCase().replace(/\s+/g, '_');
-                document.getElementById("criteria").appendChild(option);
-            }
-        }
+      });
     </script>
-</body>
+  </body>
 </html>

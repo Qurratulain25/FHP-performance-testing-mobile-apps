@@ -5,7 +5,7 @@ from fahp_utils import run_fahp_process, save_results_to_csv_and_visualize
 from pdf_generator import generate_pdf_report
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+app.config['UPLOAD_FOLDER'] = '/uploads/'
 ALLOWED_EXTENSIONS = {'xlsx'}
 
 # Check allowed file types

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -19,14 +19,50 @@
         <div class="content">
             <h1>FAHP Analytical Hierarchy Results</h1>
             
-            <!-- Display the generated plot -->
+        
             <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" style="width:100%;max-width:600px;">
             
-            <!-- Button to download the PDF report -->
+           
             <form action="/download_report" method="POST">
                 <button type="submit" class="download-btn">Download PDF Report</button>
             </form>
         </div>
     </div>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAHP Results</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='result_style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="header-box">
+      <h1>FUZZY Analytical Hierarchy</h1>
+    </div>
+    <div class="main-container">
+      <div class="sidebar">
+        <h2>Results</h2>
+        <form action="/download_report" method="POST">
+          <button type="submit" class="download-btn">
+            Download PDF Report
+          </button>
+        </form>
+      </div>
+      <div class="content">
+        <ul id="fahp-steps-results">
+          <li>Step 1: Criteria Set: throughput, latency, etc.</li>
+          <li>Step 2: Weight Assigned</li>
+          <li>Step 3: Synthetic extent</li>
+        </ul>
+        <!-- Display the generated plot -->
+        <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" />
+      </div>
+    </div>
+  </body>
 </html>
