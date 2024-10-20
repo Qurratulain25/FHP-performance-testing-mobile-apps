@@ -8,17 +8,6 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
-    <style>
-      .checkbox-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .weight-select {
-        margin-top: 5px;
-        margin-bottom: 10px;
-      }
-    </style>
   </head>
   <body>
     <div class="header-box">
@@ -74,46 +63,32 @@
             </button>
           </div>
           <div class="criteria-section">
-            <label for="custom_criteria">Or add your custom criteria:</label>
-            <input
-              type="text"
-              id="custom_criteria"
-              placeholder="Enter custom criteria"
-              disabled
-            />
+            <h2>Select Criteria and Weights</h2>
+            <div id="criteria-container"></div>
+            <button type="button" id="add-criteria-btn" disabled>
+              + Add More Criteria
+            </button>
+            <button type="button" id="add-custum-criteria-btn" disabled>
+              + Add Custom Criteria
+            </button>
+            <br />
             <button
               type="button"
-              class="critireaBTN"
-              onclick="addCustomCriteria()"
+              id="confirm-criteria-btn"
+              class="confirm-btn"
+              style="margin-top: 10px"
               disabled
             >
-              Add Criteria
-            </button>
-            <label>Select the criteria:</label>
-            <div id="criteria-checkboxes" class="checkbox-container">
-              <!-- Default checkboxes will be added here by JavaScript -->
-            </div>
-            <button type="button" class="confirm-btn" id="confirm-btn" disabled>
-              Confirm
+              Confirm Criteria and Weights
             </button>
           </div>
-          <div class="weights-section" id="weights-section">
-            <!-- Weight selects will be added here dynamically -->
-          </div>
-          <button
-            type="button"
-            class="confirm-btn hidden"
-            id="confirm-weights-btn"
-            disabled
-          >
-            Confirm
-          </button>
           <div class="run-section">
             <button id="run-btn" class="run-btn" disabled>Run</button>
           </div>
         </div>
       </div>
     </div>
+
     <script>
       const defaultCriteria = [
         "Throughput",
@@ -127,83 +102,161 @@
         "Strongly Important",
       ];
 
-      function createCheckbox(criteria) {
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.name = "criteria";
-        checkbox.value = criteria.toLowerCase().replace(/\s+/g, "_");
-        checkbox.id = `checkbox-${checkbox.value}`;
-        checkbox.disabled = true;
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(` ${criteria}`));
-        return label;
-      }
+      function createCriteriaRow(customCriteria = null) {
+        const row = document.createElement("div");
+        row.className = "criteria-row";
 
-      function createWeightSelect(criteria) {
-        const container = document.createElement("div");
-        container.className = "weight-select";
-        const label = document.createElement("label");
-        label.textContent = `Select weight for ${criteria}:`;
-        const select = document.createElement("select");
-        select.className = "weight-selection";
-        select.name = `weight-${criteria.toLowerCase().replace(/\s+/g, "_")}`;
-        select.id = `weight-${criteria.toLowerCase().replace(/\s+/g, "_")}`;
-        weightOptions.forEach((option) => {
-          const optionElement = document.createElement("option");
-          optionElement.value = option.toLowerCase().replace(/\s+/g, "_");
-          optionElement.textContent = option;
-          select.appendChild(optionElement);
-        });
-        container.appendChild(label);
-        container.appendChild(select);
-        return container;
-      }
+        const criteriaSelect = document.createElement("select");
+        criteriaSelect.className = "criteria-select";
 
-      function updateWeightSelects() {
-        const weightsSection = document.getElementById("weights-section");
-        weightsSection.innerHTML = "";
-        const checkedCriteria = Array.from(
-          document.querySelectorAll('input[name="criteria"]:checked')
-        ).map((checkbox) => checkbox.value);
-
-        checkedCriteria.forEach((criteria) => {
-          const weightSelect = createWeightSelect(criteria);
-          weightsSection.appendChild(weightSelect);
+        // Add the default criteria options
+        defaultCriteria.forEach((criteria) => {
+          const option = document.createElement("option");
+          option.value = criteria.toLowerCase().replace(/\s+/g, "_");
+          option.textContent = criteria;
+          criteriaSelect.appendChild(option);
         });
 
-        document.getElementById("run-btn").disabled =
-          checkedCriteria.length === 0;
+        // If custom criteria is provided, add it and select it
+        if (customCriteria && typeof customCriteria === "string") {
+          const customOption = document.createElement("option");
+          customOption.value = customCriteria
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+          customOption.textContent = customCriteria;
+          customOption.selected = true;
+          criteriaSelect.appendChild(customOption);
+        } else {
+          // Select the first unused default criteria
+          const unusedCriteria = getUnusedDefaultCriteria();
+          if (unusedCriteria) {
+            criteriaSelect.value = unusedCriteria
+              .toLowerCase()
+              .replace(/\s+/g, "_");
+          }
+        }
+
+        criteriaSelect.addEventListener("change", updateCriteriaOptions);
+
+        const weightSelect = document.createElement("select");
+        weightSelect.className = "weight-select";
+        weightOptions.forEach((weight) => {
+          const option = document.createElement("option");
+          option.value = weight.toLowerCase().replace(/\s+/g, "_");
+          option.textContent = weight;
+          weightSelect.appendChild(option);
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.className = "remove-btn";
+        removeBtn.onclick = function () {
+          row.remove();
+          updateCriteriaOptions();
+        };
+
+        const selectContainer = document.createElement("div");
+        selectContainer.className = "select-container";
+        selectContainer.appendChild(document.createTextNode("Criteria: "));
+        selectContainer.appendChild(criteriaSelect);
+        selectContainer.appendChild(document.createTextNode("Weight: "));
+        selectContainer.appendChild(weightSelect);
+
+        row.appendChild(selectContainer);
+
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "button-container";
+        buttonContainer.appendChild(removeBtn);
+        row.appendChild(buttonContainer);
+
+        return row;
       }
 
-      function addCustomCriteria() {
-        const customCriteria = document
-          .getElementById("custom_criteria")
-          .value.trim();
-        if (
-          customCriteria &&
-          !document.getElementById(
-            `checkbox-${customCriteria.toLowerCase().replace(/\s+/g, "_")}`
-          )
-        ) {
-          const checkboxContainer = document.getElementById(
-            "criteria-checkboxes"
+      function addCriteriaRow(customCriteria = null) {
+        const container = document.getElementById("criteria-container");
+        const unusedCriteria = getUnusedDefaultCriteria();
+
+        // Only allow adding if there are unused default criteria or custom criteria provided
+        if (customCriteria || unusedCriteria) {
+          const row = createCriteriaRow(customCriteria);
+          container.appendChild(row);
+          updateCriteriaOptions();
+        } else {
+          alert(
+            "All default criteria are already selected. Consider adding a custom criterion."
           );
-          const newCheckbox = createCheckbox(customCriteria);
-          newCheckbox.querySelector("input").disabled = false;
-          checkboxContainer.appendChild(newCheckbox);
-          document.getElementById("custom_criteria").value = "";
         }
       }
 
-      // Initialize default checkboxes
-      const checkboxContainer = document.getElementById("criteria-checkboxes");
-      defaultCriteria.forEach((criteria) => {
-        const checkbox = createCheckbox(criteria);
-        checkboxContainer.appendChild(checkbox);
-      });
+      function addCustomCriteria() {
+        const customCriteria = prompt(
+          "Please enter the name of the custom criteria:"
+        );
+        if (customCriteria && customCriteria.trim() !== "") {
+          const sanitizedCustomCriteria = customCriteria
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+          // Check if this custom criteria already exists in the list or among selected options
+          const existingCriteria = defaultCriteria.map((c) =>
+            c.toLowerCase().replace(/\s+/g, "_")
+          );
+          const selectedCriteria = Array.from(
+            document.querySelectorAll(".criteria-select")
+          ).map((select) => select.value);
 
-      // Update progress and enable next steps
+          if (
+            existingCriteria.includes(sanitizedCustomCriteria) ||
+            selectedCriteria.includes(sanitizedCustomCriteria)
+          ) {
+            alert(
+              "This custom criterion name is already taken. Please try a different name."
+            );
+            return;
+          }
+
+          // Add to the default list and then add it to the form
+          defaultCriteria.push(customCriteria);
+          addCriteriaRow(customCriteria);
+        } else {
+          alert("Invalid criteria name. Please try again.");
+        }
+      }
+
+      function updateCriteriaOptions() {
+        const selectedCriteria = Array.from(
+          document.querySelectorAll(".criteria-select")
+        ).map((select) => select.value);
+
+        // Disable selected options across all dropdowns
+        document.querySelectorAll(".criteria-select").forEach((select) => {
+          Array.from(select.options).forEach((option) => {
+            option.disabled =
+              selectedCriteria.includes(option.value) && !option.selected;
+          });
+        });
+
+        // Enable or disable the "Add More Criteria" button
+        const addMoreBtn = document.getElementById("add-criteria-btn");
+        if (getUnusedDefaultCriteria()) {
+          addMoreBtn.disabled = false;
+        } else {
+          addMoreBtn.disabled = true;
+        }
+      }
+
+      function getUnusedDefaultCriteria() {
+        const selectedCriteria = Array.from(
+          document.querySelectorAll(".criteria-select")
+        ).map((select) => select.value);
+
+        return defaultCriteria.find(
+          (criteria) =>
+            !selectedCriteria.includes(
+              criteria.toLowerCase().replace(/\s+/g, "_")
+            )
+        );
+      }
+
       function updateStepProgress(step) {
         document.getElementById(`progress-bar${step}`).style.width = "100%";
         document
@@ -213,7 +266,6 @@
         document.getElementById(`circle${step}`).textContent = "✓";
       }
 
-      // Handle file upload and progress to next step
       document
         .getElementById("upload-btn")
         .addEventListener("click", function () {
@@ -226,25 +278,19 @@
             xhr.open("POST", "/", true);
             xhr.onload = function () {
               if (xhr.status === 200) {
-                // On success, change button state and move to next step
                 document.getElementById("upload-btn").innerText = "Uploaded";
                 document.getElementById("upload-btn").style.backgroundColor =
                   "#00a2ff";
                 document.getElementById("upload-btn").disabled = true;
                 document.getElementById("file-input").disabled = true;
-
-                // Enable criteria section
-                document.getElementById("custom_criteria").disabled = false;
-                document
-                  .getElementById("criteria-checkboxes")
-                  .querySelectorAll("input")
-                  .forEach((checkbox) => {
-                    checkbox.disabled = false;
-                  });
-                document.querySelector(".critireaBTN").disabled = false;
-                document.getElementById("confirm-btn").disabled = false;
-
-                // Progress to Step 2
+                document.getElementById("add-criteria-btn").disabled = false;
+                document.getElementById(
+                  "add-custum-criteria-btn"
+                ).disabled = false;
+                document.getElementById(
+                  "confirm-criteria-btn"
+                ).disabled = false;
+                addCriteriaRow();
                 updateStepProgress(1);
               } else {
                 alert("Error uploading file.");
@@ -256,67 +302,40 @@
           }
         });
 
-      // Handle confirm button click
       document
-        .getElementById("confirm-btn")
-        .addEventListener("click", function () {
-          updateWeightSelects();
-          updateStepProgress(2);
-          this.disabled = true;
-          document.getElementById("custom_criteria").disabled = true;
-          document.querySelector(".critireaBTN").disabled = true;
-          document
-            .getElementById("criteria-checkboxes")
-            .querySelectorAll("input")
-            .forEach((checkbox) => {
-              checkbox.disabled = true;
-            });
-          document
-            .getElementById("confirm-weights-btn")
-            .classList.remove("hidden");
-          document.getElementById("confirm-weights-btn").disabled = false;
-        });
+        .getElementById("add-criteria-btn")
+        .addEventListener("click", addCriteriaRow);
+      document
+        .getElementById("add-custum-criteria-btn")
+        .addEventListener("click", addCustomCriteria);
 
       document
-        .getElementById("confirm-weights-btn")
+        .getElementById("confirm-criteria-btn")
         .addEventListener("click", function () {
+          updateStepProgress(2);
           updateStepProgress(3);
           this.disabled = true;
+          document.getElementById("add-criteria-btn").disabled = true;
+          document.getElementById("add-custum-criteria-btn").disabled = true;
+          document
+            .querySelectorAll(".criteria-select, .weight-select, .remove-btn")
+            .forEach((el) => (el.disabled = true));
           document.getElementById("run-btn").disabled = false;
         });
 
-      // Handle run FAHP process
       document.getElementById("run-btn").addEventListener("click", function () {
         var fileInput = document.getElementById("file-input").files[0];
-        console.log("fileInput", fileInput);
-        var selectedCriteria = Array.from(
-          document.querySelectorAll('input[name="criteria"]:checked')
-        ).map((checkbox) => checkbox.value);
-        console.log("selectedCriteria", selectedCriteria);
-        var linguisticWeights = {};
-        selectedCriteria.forEach((criteria) => {
-          linguisticWeights[criteria] = document.getElementById(
-            `weight-${criteria}`
-          ).value;
-        });
-        console.log("linguisticWeights", linguisticWeights);
+        var criteriaAndWeights = Array.from(
+          document.querySelectorAll(".criteria-row")
+        ).map((row) => ({
+          criteria: row.querySelector(".criteria-select").value,
+          weight: row.querySelector(".weight-select").value,
+        }));
 
-        if (fileInput && selectedCriteria.length > 0) {
-          var formData = new FormData();
-          formData.append("filename", fileInput.name);
-          formData.append(
-            "selected_criteria",
-            JSON.stringify(selectedCriteria)
-          );
-          formData.append(
-            "linguistic_weights",
-            JSON.stringify(linguisticWeights)
-          );
-
+        if (fileInput && criteriaAndWeights.length > 0) {
           var xhr = new XMLHttpRequest();
           xhr.open("POST", "/run_fahp", true);
           xhr.setRequestHeader("Content-Type", "application/json");
-
           xhr.onload = function () {
             if (xhr.status === 200) {
               var response = JSON.parse(xhr.responseText);
@@ -329,12 +348,10 @@
               alert("Error running FAHP process.");
             }
           };
-
           xhr.send(
             JSON.stringify({
               filename: fileInput.name,
-              selected_criteria: selectedCriteria,
-              linguistic_weights: linguisticWeights,
+              criteria_and_weights: criteriaAndWeights,
             })
           );
         } else {

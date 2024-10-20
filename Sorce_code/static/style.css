@@ -78,6 +78,7 @@ h2 {
   background-color: green;
 }
 .weight-selection,
+.criteria-row select,
 .upload-input,
 #criteria,
 #weights,
@@ -150,4 +151,29 @@ label {
   .select-btn {
     width: 100%;
   }
+}
+
+.select-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.button-container {
+  margin-top: 10px; /* Adds some space between the selects and the button */
+}
+.criteria-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.criteria-row select {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.remove-btn {
+  margin-left: 10px;
+  background-color: red;
+  border: none;
 }
