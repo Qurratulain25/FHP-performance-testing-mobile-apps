@@ -14,7 +14,11 @@
     <p>{{ weights }}</p>
 
     <h2>Step 3: Fuzzy Synthetic Extent Calculated</h2>
-    <!-- Add matrices and calculated weights here -->
+    <ul>
+    {% for criterion, weight in priority_weights.items() %}
+        <li>{{ criterion }}: {{ weight }}</li>
+    {% endfor %}
+    </ul>
 
     <h2>Graphical Results</h2>
     <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" style="width:100%;max-width:600px;">
