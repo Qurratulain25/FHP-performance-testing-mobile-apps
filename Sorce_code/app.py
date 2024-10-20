@@ -1,60 +1,57 @@
 import os
-import io
-import pdfkit
-import base64
-import matplotlib.pyplot as plt
-import time
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, jsonify
-
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'xlsx'}
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
+from werkzeug.utils import secure_filename
+from fahp_utils import run_fahp_process, save_results_to_csv_and_visualize
+from pdf_generator import generate_pdf_report
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'supersecretkey'  # This is needed for secure sessions
+app.config['UPLOAD_FOLDER'] = 'uploads/'
+ALLOWED_EXTENSIONS = {'xlsx'}
 
-# Function to check allowed file types
+# Check allowed file types
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Home route - handles file upload
 @app.route("/", methods=["GET", "POST"])
 def index():
-    uploaded_file = None  # Initialize the uploaded file variable
     if request.method == "POST":
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            return jsonify({"error": "No file part"}), 400
         file = request.files['file']
         if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
+            return jsonify({"error": "No selected file"}), 400
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            uploaded_file = filename  # Pass the uploaded filename
-            flash(f'File "{filename}" uploaded successfully')  # Message after success
-    
-    return render_template("index.html", uploaded_file=uploaded_file)
+            return jsonify({"success": True, "filename": filename}), 200
+    return render_template("index.html")
 
-# Route for running FAHP steps and updating the sidebar
-@app.route('/run_fahp', methods=["POST"])
+# Run FAHP process and return results
+@app.route("/run_fahp", methods=["POST"])
 def run_fahp():
-    step = request.json.get('step')
-    
-    # Simulate some time taken for each step
-    time.sleep(2)  # This is to simulate the step running
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], request.json['filename'])
+    custom_criteria = request.json['custom_criteria']
+    linguistic_weights = request.json['linguistic_weights']
 
-    response = {
-        'message': f"Step {step} completed",
-        'next_step': step + 1 if step < 4 else None  # Simulate 4 steps
-    }
-    return jsonify(response)
+    # Call the FAHP processing function
+    priority_weights, results_path, graph_path = run_fahp_process(file_path, custom_criteria, linguistic_weights)
 
-# Serve uploaded files
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return jsonify({
+        "success": True,
+        "priority_weights": priority_weights,
+        "results_path": results_path,
+        "graph_path": graph_path
+    })
+
+# Download the PDF report
+@app.route("/download_pdf", methods=["POST"])
+def download_pdf():
+    filename = request.json['filename']
+    priority_weights = request.json['priority_weights']
+    pdf_path = generate_pdf_report(priority_weights, filename)
+    return send_file(pdf_path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
