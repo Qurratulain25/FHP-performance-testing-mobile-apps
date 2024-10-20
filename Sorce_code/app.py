@@ -45,13 +45,18 @@ def run_fahp():
         "graph_path": graph_path
     })
 
-# Download the PDF report
+# # Download the PDF report
 @app.route("/download_pdf", methods=["POST"])
 def download_pdf():
     filename = request.json['filename']
-    priority_weights = request.json['priority_weights']
-    pdf_path = generate_pdf_report(priority_weights, filename)
+    criteria = request.json['criteria']  # Assuming these are passed from the frontend
+    linguistic_weights = request.json['linguistic_weights']
+    priority_weights = request.json['priority_weights']  # FAHP results
+    plot_path = request.json['plot_path']  # Path to the plot image
+
+    pdf_path = generate_pdf_report(priority_weights, criteria, linguistic_weights, plot_path, filename)
     return send_file(pdf_path, as_attachment=True)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
