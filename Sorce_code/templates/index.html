@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <!-- Header box on top -->
     <div class="header-box">
         <h1>FUZZY Analytical Hierarchy</h1>
     </div>
@@ -19,97 +18,137 @@
                 <ul id="fahp-steps">
                     <li id="step1">
                         <div class="step-container">
-                            <span class="circle" id="circle1">1</span>
+                            <span class="circle" id="circle1">✔</span>
                             <span>Step 1: Set Goal</span>
                         </div>
                         <div class="progress-bar" id="progress-bar1"></div>
                     </li>
                     <li id="step2">
                         <div class="step-container">
-                            <span class="circle" id="circle2">2</span>
+                            <span class="circle" id="circle2">✔</span>
                             <span>Step 2: Pairwise Comparison</span>
                         </div>
                         <div class="progress-bar" id="progress-bar2"></div>
                     </li>
                     <li id="step3">
                         <div class="step-container">
-                            <span class="circle" id="circle3">3</span>
+                            <span class="circle" id="circle3">✔</span>
                             <span>Step 3: Fuzzy Synthetic Extent</span>
                         </div>
                         <div class="progress-bar" id="progress-bar3"></div>
                     </li>
                     <li id="step4">
                         <div class="step-container">
-                            <span class="circle" id="circle4">4</span>
+                            <span class="circle" id="circle4">✔</span>
                             <span>Step 4: Priority Weights Calculation</span>
                         </div>
                         <div class="progress-bar" id="progress-bar4"></div>
                     </li>
                 </ul>
             </div>
+
             <div class="content">
                 <div class="upload-section">
-                    <form id="upload-form" action="/" method="post" enctype="multipart/form-data">
-                        <input type="file" name="file" class="upload-input" id="file-input" />
-                        <button type="submit" class="upload-btn" id="upload-btn">Upload</button>
-                        <button type="button" class="uploaded-btn" id="uploaded-btn" style="display:none;" disabled>Uploaded</button>
-                    </form>
+                    <label for="file-input">Choose the dataset:</label>
+                    <input type="file" name="file" class="upload-input" id="file-input" required />
+                    <button type="button" class="upload-btn" id="upload-btn">Upload</button>
+                </div>
+
+                <div class="criteria-section">
+                    <label for="custom_criteria">Or add your custom criteria:</label>
+                    <input type="text" id="custom_criteria" placeholder="Enter custom criteria" />
+                    <button type="button" onclick="addCustomCriteria()">Add Criteria</button>
+
+                    <label for="criteria">Select the criteria:</label>
+                    <select id="criteria" name="criteria">
+                        <option value="throughput">Throughput</option>
+                        <option value="latency">Latency</option>
+                        <option value="response_time">Response Time</option>
+                        <option value="network_load">Network Load</option>
+                    </select>
+                    <button type="button" class="select-btn" id="criteria-btn" disabled>Select</button>
+                </div>
+
+                <div class="weights-section">
+                    <label for="weights">Select linguistic weights:</label>
+                    <select id="weights" name="weights">
+                        <option value="equally_important">Equally Important</option>
+                        <option value="moderately_important">Moderately Important</option>
+                        <option value="strongly_important">Strongly Important</option>
+                    </select>
+                    <button type="button" class="select-btn" id="weights-btn" disabled>Select</button>
                 </div>
 
                 <div class="run-section">
-                    <button id="run-btn" class="run-btn" onclick="startFAHPProcess()">Run</button>
+                    <button id="run-btn" class="run-btn" disabled>Run</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript for handling FAHP Process and Progress Bars -->
     <script>
-        function animateProgressBar(progressBarId, duration) {
-            const progressBar = document.getElementById(progressBarId);
-            let width = 0;
-            const interval = setInterval(() => {
-                if (width >= 100) {
-                    clearInterval(interval);
-                } else {
-                    width++;
-                    progressBar.style.width = width + '%';
-                }
-            }, duration / 100);  // Divide total duration by 100 to simulate progress percentage
+        // Handle file upload and progress to next step
+        document.getElementById("upload-btn").addEventListener("click", function () {
+            var fileInput = document.getElementById("file-input").files[0];
+            if (fileInput) {
+                var formData = new FormData();
+                formData.append("file", fileInput);
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/", true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // On success, change button state and move to next step
+                        document.getElementById("upload-btn").innerText = "Uploaded";
+                        document.getElementById("upload-btn").style.backgroundColor = "#3498db";
+                        document.getElementById("upload-btn").disabled = true;
+
+                        // Progress to Step 2
+                        updateStepProgress(1);
+                        document.getElementById("criteria-btn").disabled = false;  // Enable next button
+                    } else {
+                        alert("Error uploading file.");
+                    }
+                };
+                xhr.send(formData);
+            } else {
+                alert("Please choose a file to upload.");
+            }
+        });
+
+        // Update progress and enable next steps
+        function updateStepProgress(step) {
+            document.getElementById(`progress-bar${step}`).style.width = "100%";
+            document.getElementById(`circle${step}`).classList.add("completed");
         }
 
-        function startFAHPProcess() {
-            let step = 1;
+        // Handle criteria selection
+        document.getElementById("criteria-btn").addEventListener("click", function () {
+            updateStepProgress(2);  // Move to Step 3
+            document.getElementById("weights-btn").disabled = false;  // Enable weights selection
+        });
 
-            function runNextStep() {
-                // Animate the progress bar for the current step
-                animateProgressBar(`progress-bar${step}`, 2000);  // Simulate 2 seconds per step
+        // Handle weights selection
+        document.getElementById("weights-btn").addEventListener("click", function () {
+            updateStepProgress(3);  // Move to Step 4
+            document.getElementById("run-btn").disabled = false;  // Enable Run button
+        });
 
-                fetch('/run_fahp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ step: step }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById(`circle${step}`).classList.add('completed');
-                    document.getElementById(`progress-bar${step}`).classList.add('completed');
-                    if (data.next_step) {
-                        step = data.next_step;
-                        runNextStep();  // Run the next step after this one is completed
-                    } else {
-                        // When the process is complete, redirect to the results page
-                        window.location.href = "/show_results";
-                    }
-                })
-                .catch(error => {
-                    console.error('Error running FAHP process:', error);
-                });
+        // Handle run FAHP process
+        document.getElementById("run-btn").addEventListener("click", function () {
+            updateStepProgress(4);  // Final step completion
+            alert("FAHP process completed!");  // Add FAHP process call here
+        });
+
+        // Handle adding custom criteria
+        function addCustomCriteria() {
+            var customCriteria = document.getElementById("custom_criteria").value.trim();
+            if (customCriteria) {
+                var option = document.createElement("option");
+                option.text = customCriteria;
+                option.value = customCriteria.toLowerCase().replace(/\s+/g, '_');
+                document.getElementById("criteria").appendChild(option);
             }
-
-            runNextStep();  // Start the first step
         }
     </script>
 </body>

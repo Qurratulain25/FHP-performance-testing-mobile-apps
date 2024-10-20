@@ -2,3 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>FAHP Report</title>
+</head>
+<body>
+    <h1>FAHP Analytical Hierarchy Report</h1>
+
+    <h2>Step 1: Criteria Set</h2>
+    <p>{{ criteria }}</p>
+
+    <h2>Step 2: Linguistic Weights Assigned</h2>
+    <p>{{ weights }}</p>
+
+    <h2>Step 3: Fuzzy Synthetic Extent Calculated</h2>
+    <!-- Add matrices and calculated weights here -->
+
+    <h2>Graphical Results</h2>
+    <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" style="width:100%;max-width:600px;">
+</body>
+</html>

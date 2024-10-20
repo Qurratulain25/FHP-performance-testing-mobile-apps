@@ -19,8 +19,10 @@
         <div class="content">
             <h1>FAHP Analytical Hierarchy Results</h1>
             
+            <!-- Display the generated plot -->
             <img src="data:image/png;base64,{{ plot_url }}" alt="Bar Chart" style="width:100%;max-width:600px;">
             
+            <!-- Button to download the PDF report -->
             <form action="/download_report" method="POST">
                 <button type="submit" class="download-btn">Download PDF Report</button>
             </form>
