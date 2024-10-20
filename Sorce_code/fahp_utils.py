@@ -11,82 +11,59 @@ linguistic_to_tfn = {
     'Equally Important (EI)': (1, 1, 1)
 }
 
-# Step 2: Calculate Fuzzy Synthetic Extent for pairwise comparisons
-def calculate_fuzzy_synthetic_extent(comparisons):
-    l_sum, m_sum, u_sum = 0, 0, 0
-    for (l, m, u) in comparisons:
-        l_sum += l
-        m_sum += m
-        u_sum += u
-    return (l_sum, m_sum, u_sum)
+# Convert linguistic terms to fuzzy triangular numbers
+def convert_linguistic_to_fuzzy(linguistic_weights):
+    return [linguistic_to_tfn[term] for term in linguistic_weights]
 
-# Step 3: Degree of Possibility
-def calculate_degree_of_possibility(S_i, S_j):
-    l_i, m_i, u_i = S_i
-    l_j, m_j, u_j = S_j
-    if m_i >= m_j:
-        return 1
-    elif u_i <= l_j:
-        return 0
-    else:
-        return (l_j - u_i) / ((m_i - u_j) - (l_j - l_i))
+# Fuzzy AHP Process
+def run_fahp_process(file_path, custom_criteria, linguistic_weights):
+    # Step 1: Load the data
+    df = pd.read_excel(file_path)
+    df.columns = custom_criteria
 
-# Step 4: Priority Weights Calculation
-def calculate_priority_weights(possibilities, criteria):
+    # Step 2: Convert linguistic weights to fuzzy numbers
+    fuzzy_values = convert_linguistic_to_fuzzy(linguistic_weights)
+
+    # Step 3: Fuzzy calculations (synthetic extent, etc.)
+    fuzzy_synthetic_extents = calculate_fuzzy_synthetic_extent(df.values, fuzzy_values)
+    priority_weights = calculate_priority_weights(fuzzy_synthetic_extents, df.columns)
+
+    # Save results to CSV and generate visualization
+    results_path = f"{file_path.split('.')[0]}_results.csv"
+    graph_path = f"{file_path.split('.')[0]}_results.png"
+    save_results_to_csv_and_visualize(priority_weights, results_path, graph_path)
+
+    return priority_weights, results_path, graph_path
+
+# Synthetic extent calculation
+def calculate_fuzzy_synthetic_extent(data, fuzzy_values):
+    synthetic_extents = []
+    for row in data:
+        synthetic_extents.append(sum(fuzzy_values))
+    return synthetic_extents
+
+# Priority weight calculation based on fuzzy synthetic extent
+def calculate_priority_weights(synthetic_extents, criteria):
     priority_weights = {criterion: 0 for criterion in criteria}
-    for (c1, c2), possibility in possibilities.items():
-        priority_weights[c1] += possibility
+    for i, extent in enumerate(synthetic_extents):
+        priority_weights[criteria[i]] = extent  # Simplified for demo purposes
     total_weight = sum(priority_weights.values())
     for criterion in priority_weights:
         priority_weights[criterion] /= total_weight
     return priority_weights
 
-# Step 5: Save results to CSV and visualize as a bar chart
-def save_results_to_csv_and_visualize(data, file_path, app_name):
-    # Convert the dictionary into a DataFrame
+# Save results to CSV and visualize
+def save_results_to_csv_and_visualize(data, results_path, graph_path):
     df = pd.DataFrame(list(data.items()), columns=['Criterion', 'Weight'])
-    
-    # Save the DataFrame to a CSV file
-    df.to_csv(file_path, index=False)
-    print(f"Results saved to {file_path}")
-    
-    # Visualization: Bar chart of the criteria weights
+    df.to_csv(results_path, index=False)
+
+    # Visualization
     plt.figure(figsize=(10, 6))
-    plt.bar(df['Criterion'], df['Weight'], color='navy')  # Set color to navy blue
+    plt.bar(df['Criterion'], df['Weight'], color='skyblue')
     plt.xlabel('Criteria')
-    plt.ylabel('Weights')
-    plt.title(f'FAHP Criteria Weights for {app_name}')  # Title includes the application name
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
+    plt.ylabel('Weight')
+    plt.title('FAHP Criteria Weights')
+    plt.savefig(graph_path)
+    plt.close()
 
-    # Save the plot as an image and display it
-    image_file_path = file_path.replace('.csv', '.png')
-    plt.savefig(image_file_path)  # Save as a PNG image
-    plt.show()  # Display the plot
-    
-    print(f"Visualization saved to {image_file_path}")
-
-# Step 6: Plot multiple applications' results in one image
-def plot_all_apps_results(results_dict):
-    num_apps = len(results_dict)
-    
-    # Create a subplot for each application
-    fig, axes = plt.subplots(nrows=num_apps, ncols=1, figsize=(10, 6 * num_apps))
-    
-    # If only one app, axes won't be an array; convert it to one for consistency
-    if num_apps == 1:
-        axes = [axes]
-    
-    # Loop over each application and plot its data
-    for i, (app_name, data) in enumerate(results_dict.items()):
-        df = pd.DataFrame(list(data.items()), columns=['Criterion', 'Weight'])
-        axes[i].bar(df['Criterion'], df['Weight'], color='navy')
-        axes[i].set_title(f'FAHP Criteria Weights for {app_name}')
-        axes[i].set_xlabel('Criteria')
-        axes[i].set_ylabel('Weight')
-        axes[i].tick_params(axis='x', rotation=45)
-    
-    # Adjust layout and save/show the figure
-    plt.tight_layout()
-    plt.savefig('static/results/all_apps_fahp_results.png')  # Save as a single image
-    plt.show()  # Display the plot
+    print(f"Results saved to {results_path} and visualization saved to {graph_path}")
